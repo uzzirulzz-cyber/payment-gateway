@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id               String   @id @default(cuid())
+  txnRefNo         String   @unique
+  amount           Float
+  description      String
+  customerEmail    String?
+  customerName     String?
+  customerPhone    String?
+  status           String   @default("pending") // pending | paid | failed | cancelled | refunded
+  responseCode     String?
+  responseMessage  String?
+  paymentMethod    String?
+  transactionId    String? // JazzCash pp_TxnRefNo (different from our ref) / pp_RetreivalReferenceNumber
+  rawResponse      String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}

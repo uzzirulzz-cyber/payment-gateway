@@ -106,6 +106,25 @@ curl -X POST http://localhost:3000/api/seed?count=25
 - Make sure `JAZZCASH_RETURN_URL` is publicly reachable (JazzCash may also POST server-to-server).
 - Consider adding webhook signature verification for production S2S callbacks (same `/api/jazzcash/return` endpoint handles both browser redirects and S2S).
 
+### Going live checklist
+
+Before you can receive **real** payments, you need to complete these steps on JazzCash's side. Our code is ready — the gaps are all merchant-account provisioning tasks.
+
+| # | Task | Where to do it | Why |
+|---|------|----------------|-----|
+| 1 | Get **production** merchant credentials | Email `merchantsupport@jazz.com.pk` or your JazzCash account manager | Sandbox credentials (`MC…` issued as "Sandbox Test Credentials") only work against `sandbox.jazzcash.com.pk`. Production needs a separate Merchant ID + Password + Integrity Salt issued after your live KYC is approved. |
+| 2 | Confirm `pp_TxnType` is enabled | JazzCash merchant support | Some merchants are enabled only for `CREDIT_CARD` initially. Ask them to enable `MWALLET` (Mobile Wallet) too if you want wallet payments. |
+| 3 | Confirm `pp_BankID` and `pp_ProductID` values | JazzCash merchant support | The defaults in `src/lib/jazzcash.ts` (`TBANK` / `RETL`) may not match your merchant profile. Ask JazzCash for your assigned values. |
+| 4 | Set a stable public `JAZZCASH_RETURN_URL` | Your deployment platform | JazzCash production POSTs the callback to this URL. It must be HTTPS and publicly reachable (not `localhost`, not the sandbox preview URL). |
+| 5 | Replace credentials in `.env` | Your production deployment | Set `JAZZCASH_MERCHANT_ID`, `JAZZCASH_PASSWORD`, `JAZZCASH_INTEGRITY_SALT` to your **production** values, and `JAZZCASH_SANDBOX=false`. |
+| 6 | Test a small live payment | Your live site | Pay PKR 1 with a real JazzCash wallet / card to confirm the full loop works end-to-end (initiate → JazzCash → callback → order marked paid). |
+| 7 | Monitor the History tab | Your live site | All real transactions will appear there. Filter by `pending` to catch any stuck callbacks. |
+
+**Symptom you'll see if production isn't provisioned yet:**
+> "Sorry! Your transaction could not be processed due to insufficient merchant information. Kindly contact respective merchant for further details."
+
+This is a JazzCash-side error — it means the merchant profile is incomplete. Our code is correctly signing and submitting the request; JazzCash just isn't accepting it yet. Email `merchantsupport@jazz.com.pk` with your Merchant ID and they'll fix it on their side.
+
 ---
 
 ## Tech stack

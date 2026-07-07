@@ -75,8 +75,9 @@ export async function POST(request: Request) {
     ok: true,
     orderId: order.id,
     txnRefNo,
-    formAction: jazzCashFormAction(env.sandbox),
+    formAction: jazzCashFormAction(env.sandbox, env.demoMode),
     params,
     sandbox: env.sandbox,
+    demoMode: env.demoMode,
   });
 }

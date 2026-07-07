@@ -98,7 +98,8 @@ export async function POST(request: Request) {
   if (result instanceof NextResponse) return result;
 
   // Browser redirect back to the SPA so it can show a status modal.
-  const redirectUrl = `/?payment=return&txnRefNo=${encodeURIComponent(result.txnRefNo)}&status=${result.status}`;
+  const baseUrl = new URL(request.url).origin;
+  const redirectUrl = `${baseUrl}/?payment=return&txnRefNo=${encodeURIComponent(result.txnRefNo)}&status=${result.status}`;
   return NextResponse.redirect(redirectUrl, 302);
 }
 
@@ -112,6 +113,8 @@ export async function GET(request: Request) {
   const result = await handleParams(params);
   if (result instanceof NextResponse) return result;
 
-  const redirectUrl = `/?payment=return&txnRefNo=${encodeURIComponent(result.txnRefNo)}&status=${result.status}`;
+  // NextResponse.redirect requires an absolute URL. Build it from the request.
+  const baseUrl = new URL(request.url).origin;
+  const redirectUrl = `${baseUrl}/?payment=return&txnRefNo=${encodeURIComponent(result.txnRefNo)}&status=${result.status}`;
   return NextResponse.redirect(redirectUrl, 302);
 }

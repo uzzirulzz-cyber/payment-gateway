@@ -19,6 +19,7 @@ export type JazzCashEnv = {
   integritySalt: string;
   returnUrl: string;
   sandbox: boolean;
+  demoMode: boolean;
 };
 
 export function getJazzCashEnv(): JazzCashEnv {
@@ -29,6 +30,7 @@ export function getJazzCashEnv(): JazzCashEnv {
     process.env.JAZZCASH_RETURN_URL ??
     `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/api/jazzcash/return`;
   const sandbox = (process.env.JAZZCASH_SANDBOX ?? "true") !== "false";
+  const demoMode = (process.env.JAZZCASH_DEMO_MODE ?? "false") === "true";
 
   if (!merchantId || !password || !integritySalt) {
     throw new Error(
@@ -36,10 +38,16 @@ export function getJazzCashEnv(): JazzCashEnv {
     );
   }
 
-  return { merchantId, password, integritySalt, returnUrl, sandbox };
+  return { merchantId, password, integritySalt, returnUrl, sandbox, demoMode };
 }
 
-export function jazzCashFormAction(sandbox: boolean): string {
+export function jazzCashFormAction(sandbox: boolean, demoMode = false): string {
+  // In demo mode, redirect to our local simulated JazzCash payment page.
+  // This keeps the full signing → redirect → callback → verification flow
+  // intact while removing the external dependency on JazzCash's server.
+  if (demoMode) {
+    return "/simulate";
+  }
   return sandbox
     ? "https://sandbox.jazzcash.com.pk/CustomerPortal/transactionmanagement/merchantform/"
     : "https://payments.jazzcash.com.pk/CustomerPortal/transactionmanagement/merchantform/";

@@ -84,7 +84,19 @@ export function CheckoutView({ onBack }: { onBack: () => void }) {
         return;
       }
 
-      // Submit hidden form to JazzCash — this navigates the browser away.
+      // In demo mode, redirect to /simulate with params as query string
+      // (since /simulate is a client component and can't read POST body).
+      if (json.demoMode) {
+        const searchParams = new URLSearchParams();
+        const paramObj = json.params as Record<string, string>;
+        Object.keys(paramObj).forEach((k) => {
+          searchParams.set(k, paramObj[k]);
+        });
+        window.location.assign(`/simulate?${searchParams.toString()}`);
+        return;
+      }
+
+      // Real JazzCash flow: submit hidden form — this navigates the browser away.
       const form = document.createElement("form");
       form.method = "POST";
       form.action = json.formAction;

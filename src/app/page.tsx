@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   History,
-  Music2,
   Sparkles,
   Database,
   Loader2,
@@ -60,9 +59,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-violet-50/40 via-background to-background dark:from-violet-950/10">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50/40 via-background to-background dark:from-blue-950/10">
       {/* ===== Top banner (matches reference) ===== */}
-      <div className="bg-gradient-to-r from-violet-700 to-pink-600 text-white text-center text-xs py-1.5 px-4">
+      <div className="bg-blue-700 text-white text-center text-xs py-1.5 px-4">
         {BRAND.legalName.toUpperCase()}
       </div>
 
@@ -74,9 +73,11 @@ export default function Home() {
             onClick={() => setView("landing")}
             className="flex items-center gap-2.5 group"
           >
-            <div className="size-9 rounded-xl bg-gradient-to-br from-violet-600 to-pink-500 flex items-center justify-center text-white shadow-sm group-hover:shadow-md transition-shadow">
-              <Music2 className="size-5" />
-            </div>
+            <img
+              src="/playbeat-logo.png"
+              alt="PlayBeat"
+              className="h-9 w-auto"
+            />
             <div className="text-left">
               <h1 className="text-base font-semibold leading-tight">
                 {BRAND.name}
@@ -133,10 +134,10 @@ export default function Home() {
         {view === "dashboard" && (
           <>
             {hasData === false && (
-              <div className="mb-6 rounded-lg border border-dashed border-violet-300 dark:border-violet-800 bg-violet-50/50 dark:bg-violet-950/20 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="mb-6 rounded-lg border border-dashed border-blue-300 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-start gap-3">
-                  <div className="size-9 rounded-lg bg-violet-100 dark:bg-violet-900 flex items-center justify-center shrink-0">
-                    <Database className="size-4 text-violet-700 dark:text-violet-300" />
+                  <div className="size-9 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center shrink-0">
+                    <Database className="size-4 text-blue-700 dark:text-blue-300" />
                   </div>
                   <div>
                     <p className="text-sm font-medium">
@@ -153,7 +154,7 @@ export default function Home() {
                   size="sm"
                   onClick={seedData}
                   disabled={seeding}
-                  className="border-violet-300 text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:text-violet-300 dark:hover:bg-violet-900/50"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/50"
                 >
                   {seeding ? (
                     <Loader2 className="size-3.5 animate-spin" />

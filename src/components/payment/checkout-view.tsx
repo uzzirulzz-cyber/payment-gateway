@@ -117,9 +117,11 @@ export function CheckoutView({ onBack }: { onBack: () => void }) {
         >
           <ArrowLeft className="size-5" />
         </Button>
-        <div className="size-9 rounded-lg bg-gradient-to-br from-violet-600 to-pink-500 flex items-center justify-center text-white">
-          <span className="text-xs font-bold">PB</span>
-        </div>
+        <img
+          src="/playbeat-logo.png"
+          alt="PlayBeat"
+          className="h-9 w-auto"
+        />
         <h1 className="text-lg font-semibold">Secure Checkout</h1>
       </div>
 
@@ -183,8 +185,8 @@ export function CheckoutView({ onBack }: { onBack: () => void }) {
                       key={cat.title}
                       className="rounded-lg border bg-card/50 p-4 space-y-2"
                     >
-                      <div className="size-9 rounded-md bg-gradient-to-br from-violet-100 to-pink-100 dark:from-violet-950/50 dark:to-pink-950/50 flex items-center justify-center">
-                        <Icon className="size-4 text-violet-600 dark:text-violet-400" />
+                      <div className="size-9 rounded-md bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-950/50 dark:to-blue-900/50 flex items-center justify-center">
+                        <Icon className="size-4 text-blue-600 dark:text-blue-400" />
                       </div>
                       <p className="text-sm font-medium">{cat.title}</p>
                       <p className="text-xs text-muted-foreground">
@@ -252,7 +254,7 @@ export function CheckoutView({ onBack }: { onBack: () => void }) {
               <ol className="space-y-3">
                 {HOW_IT_WORKS.map((step, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <span className="size-6 rounded-full bg-violet-100 dark:bg-violet-950 text-violet-700 dark:text-violet-300 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="size-6 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">
                       {i + 1}
                     </span>
                     <span className="text-sm text-muted-foreground pt-0.5">
@@ -268,7 +270,7 @@ export function CheckoutView({ onBack }: { onBack: () => void }) {
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full h-12 text-base bg-gradient-to-r from-violet-600 to-pink-500 text-white hover:from-violet-700 hover:to-pink-600 shadow-lg shadow-violet-500/20"
+              className="w-full h-12 text-base bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/20"
             >
               {submitting ? (
                 <>

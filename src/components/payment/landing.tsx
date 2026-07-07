@@ -6,7 +6,6 @@ import {
   Headphones,
   ArrowRight,
   Sparkles,
-  Music2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -22,42 +21,46 @@ interface LandingProps {
 export function Landing({ onPayNow }: LandingProps) {
   return (
     <div className="space-y-20">
-      {/* ===== Hero ===== */}
-      <section className="relative overflow-hidden">
-        {/* Glow background */}
+      {/* ===== Hero with background image ===== */}
+      <section className="relative overflow-hidden rounded-3xl">
+        {/* Background image */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10"
-        >
-          <div className="absolute top-[-10%] left-[20%] h-72 w-72 rounded-full bg-violet-500/20 blur-3xl" />
-          <div className="absolute top-[20%] right-[10%] h-80 w-80 rounded-full bg-pink-500/20 blur-3xl" />
-          <div className="absolute bottom-[-10%] left-[40%] h-64 w-64 rounded-full bg-fuchsia-500/15 blur-3xl" />
-        </div>
+          className="absolute inset-0 -z-10 bg-cover bg-center"
+          style={{ backgroundImage: "url(/playbeat-bg.jpg)" }}
+        />
+        {/* Dark overlay for readability */}
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10 bg-gradient-to-b from-black/70 via-black/60 to-black/80"
+        />
 
-        <div className="text-center max-w-3xl mx-auto pt-10 pb-4">
-          {/* Brand mark */}
-          <div className="inline-flex items-center justify-center size-20 rounded-2xl bg-gradient-to-br from-violet-600 to-pink-500 shadow-lg shadow-violet-500/20 mb-8">
-            <Music2 className="size-10 text-white" />
-          </div>
+        <div className="text-center max-w-3xl mx-auto pt-16 pb-20 px-4">
+          {/* Logo image */}
+          <img
+            src="/playbeat-logo.png"
+            alt="PlayBeat logo"
+            className="mx-auto h-20 sm:h-24 w-auto mb-8 drop-shadow-2xl"
+          />
 
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.05]">
-            PlayBeat
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.05] text-white">
+            {BRAND.name}
           </h1>
 
-          <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-6 text-lg sm:text-xl text-white/90 max-w-2xl mx-auto">
             {BRAND.description}
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-3">
             <Button
               size="lg"
-              className="h-12 px-10 bg-gradient-to-r from-violet-600 to-pink-500 text-white hover:from-violet-700 hover:to-pink-600 shadow-lg shadow-violet-500/20 text-base"
+              className="h-12 px-10 bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/30 text-base"
               onClick={onPayNow}
             >
               Pay Now
               <ArrowRight className="size-4" />
             </Button>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <p className="text-xs text-white/70 flex items-center gap-1">
               <Sparkles className="size-3" />
               No account needed · Instant activation
             </p>
@@ -73,11 +76,11 @@ export function Landing({ onPayNow }: LandingProps) {
             return (
               <Card
                 key={vp.title}
-                className="text-center hover:border-violet-300 dark:hover:border-violet-800 hover:shadow-md transition-all"
+                className="text-center hover:border-blue-300 dark:hover:border-blue-800 hover:shadow-md transition-all"
               >
                 <CardContent className="pt-8 pb-8">
-                  <div className="size-12 rounded-xl bg-gradient-to-br from-violet-100 to-pink-100 dark:from-violet-950/50 dark:to-pink-950/50 flex items-center justify-center mx-auto mb-4">
-                    <Icon className="size-6 text-violet-600 dark:text-violet-400" />
+                  <div className="size-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-950/50 dark:to-blue-900/50 flex items-center justify-center mx-auto mb-4">
+                    <Icon className="size-6 text-blue-600 dark:text-blue-400" />
                   </div>
                   <h2 className="font-semibold text-base mb-1.5">
                     {vp.title}

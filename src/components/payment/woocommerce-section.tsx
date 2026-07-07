@@ -165,14 +165,14 @@ export function WooCommerceSection() {
           aria-hidden
           className="pointer-events-none absolute inset-0 -z-10"
         >
-          <div className="absolute top-[-10%] left-[20%] h-72 w-72 rounded-full bg-violet-500/20 blur-3xl" />
-          <div className="absolute top-[20%] right-[10%] h-80 w-80 rounded-full bg-pink-500/20 blur-3xl" />
+          <div className="absolute top-[-10%] left-[20%] h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
+          <div className="absolute top-[20%] right-[10%] h-80 w-80 rounded-full bg-blue-400/20 blur-3xl" />
         </div>
 
         <div className="text-center max-w-3xl mx-auto pt-6">
           <Badge
             variant="secondary"
-            className="mb-5 gap-1.5 bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300 border-violet-200 dark:border-violet-900"
+            className="mb-5 gap-1.5 bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200 dark:border-blue-900"
           >
             <Package className="size-3" />
             WooCommerce Plugin · v1.0.0
@@ -180,7 +180,7 @@ export function WooCommerceSection() {
 
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1]">
             Add JazzCash payments to your{" "}
-            <span className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
               WooCommerce store
             </span>
           </h1>
@@ -195,7 +195,7 @@ export function WooCommerceSection() {
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button
               size="lg"
-              className="h-12 px-8 bg-gradient-to-r from-violet-600 to-pink-500 text-white hover:from-violet-700 hover:to-pink-600 shadow-lg shadow-violet-500/20"
+              className="h-12 px-8 bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/20"
               onClick={handleDownload}
               disabled={downloading}
             >
@@ -228,11 +228,11 @@ export function WooCommerceSection() {
             return (
               <Card
                 key={f.title}
-                className="hover:border-violet-300 dark:hover:border-violet-800 hover:shadow-md transition-all"
+                className="hover:border-blue-300 dark:hover:border-blue-800 hover:shadow-md transition-all"
               >
                 <CardContent className="pt-6">
-                  <div className="size-10 rounded-lg bg-gradient-to-br from-violet-100 to-pink-100 dark:from-violet-950/50 dark:to-pink-950/50 flex items-center justify-center mb-4">
-                    <Icon className="size-5 text-violet-600 dark:text-violet-400" />
+                  <div className="size-10 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-950/50 dark:to-blue-900/50 flex items-center justify-center mb-4">
+                    <Icon className="size-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <h3 className="font-semibold text-base mb-1.5">{f.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
@@ -263,7 +263,7 @@ export function WooCommerceSection() {
           {INSTALL_STEPS.map((step, i) => (
             <Card key={step.title} className="relative">
               <CardContent className="pt-6">
-                <div className="absolute top-4 right-4 size-8 rounded-full bg-violet-100 dark:bg-violet-950 text-violet-700 dark:text-violet-300 text-sm font-bold flex items-center justify-center">
+                <div className="absolute top-4 right-4 size-8 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-sm font-bold flex items-center justify-center">
                   {i + 1}
                 </div>
                 <h3 className="font-semibold text-base mb-1.5 pr-10">
@@ -292,9 +292,9 @@ export function WooCommerceSection() {
               {PLUGIN_FILES.map((f) => (
                 <div
                   key={f.path}
-                  className="flex items-start gap-3 rounded-lg border bg-card/50 p-3 hover:border-violet-300 dark:hover:border-violet-800 transition-colors"
+                  className="flex items-start gap-3 rounded-lg border bg-card/50 p-3 hover:border-blue-300 dark:hover:border-blue-800 transition-colors"
                 >
-                  <FileCode className="size-4 text-violet-600 dark:text-violet-400 mt-0.5 shrink-0" />
+                  <FileCode className="size-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline justify-between gap-3">
                       <code className="text-sm font-mono text-foreground break-all">
@@ -322,7 +322,7 @@ export function WooCommerceSection() {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-xl flex items-center gap-2">
-                  <Code2 className="size-5 text-violet-600 dark:text-violet-400" />
+                  <Code2 className="size-5 text-blue-600 dark:text-blue-400" />
                   How signing works
                 </CardTitle>
                 <CardDescription>
@@ -390,7 +390,7 @@ export function WooCommerceSection() {
 
       {/* ===== CTA ===== */}
       <section>
-        <Card className="overflow-hidden border-0 bg-gradient-to-br from-violet-600 to-pink-600 text-white">
+        <Card className="overflow-hidden border-0 bg-gradient-to-br from-blue-600 to-blue-600 text-white">
           <CardContent className="pt-10 pb-10 px-8 sm:px-12 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold mb-3">
               Ready to accept JazzCash on your store?
@@ -402,7 +402,7 @@ export function WooCommerceSection() {
             <Button
               size="lg"
               variant="secondary"
-              className="h-12 px-8 bg-white text-violet-700 hover:bg-white/90"
+              className="h-12 px-8 bg-white text-blue-700 hover:bg-white/90"
               onClick={handleDownload}
               disabled={downloading}
             >

@@ -39,3 +39,20 @@ model Order {
   @@index([status])
   @@index([createdAt])
 }
+
+/// Branding + theme settings. One row per restore point.
+/// The row with isDefault=true is the active configuration.
+model Setting {
+  id             String   @id @default(cuid())
+  name           String   @unique // e.g. "default", "christmas-2026"
+  label          String   // human-friendly, e.g. "Default"
+  isDefault      Boolean  @default(false)
+  logoPath       String   @default("/playbeat-logo.png")
+  backgroundPath String   @default("/playbeat-bg.jpg")
+  primaryColor   String   @default("#1e3a8a") // blue
+  accentColor    String   @default("#3b82f6") // lighter blue
+  heroTitle      String   @default("PlayBeat")
+  heroTagline    String   @default("Premium digital products delivered instantly.")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

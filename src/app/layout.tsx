@@ -14,34 +14,35 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Playbeat Digital — Where independent sound meets the world",
+  title: "PlayBeat — Premium digital products, instantly delivered",
   description:
-    "Stream, distribute, and monetize your music and podcasts across 150+ platforms. Built for independent artists who want full control and 100% of their royalties. Pay in PKR via JazzCash.",
+    "Premium digital products delivered instantly. Secure checkout powered by JazzCash — accepted across Pakistan & worldwide.",
   keywords: [
-    "Playbeat Digital",
-    "music distribution",
-    "podcast hosting",
+    "PlayBeat",
+    "PlayBeat Digital",
+    "digital products",
     "JazzCash payments",
-    "Pakistan music",
-    "independent artists",
-    "royalties",
+    "Pakistan",
+    "instant activation",
+    "secure checkout",
   ],
-  authors: [{ name: "Playbeat Digital" }],
+  authors: [{ name: "PlayBeat Digital" }],
   icons: {
     icon: "/playbeat-logo.png",
+    apple: "/playbeat-logo.png",
   },
   openGraph: {
-    title: "Playbeat Digital",
+    title: "PlayBeat",
     description:
-      "Where independent sound meets the world. Distribute to 150+ stores, keep 100% of royalties.",
-    siteName: "Playbeat Digital",
+      "Premium digital products delivered instantly. Secure checkout powered by JazzCash.",
+    siteName: "PlayBeat",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Playbeat Digital",
+    title: "PlayBeat",
     description:
-      "Where independent sound meets the world. Distribute to 150+ stores, keep 100% of royalties.",
+      "Premium digital products delivered instantly. Secure checkout powered by JazzCash.",
   },
 };
 
@@ -51,9 +52,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground pb-page-bg`}
       >
         {children}
         <Toaster />

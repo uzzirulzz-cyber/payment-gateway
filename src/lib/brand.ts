@@ -17,6 +17,16 @@ export const BRAND = {
   email: "hello@playbeat.digital",
   domain: "playbeat.digital",
   footer: "© 2026 Playbeat Digital Private Limited. All rights reserved.",
+  logo: "/playbeat-logo.png",
+  // Brand palette — derived from the official PLAYBEAT logo.
+  // "PLAY" is white, "BEAT" is a blue gradient #0099FF → #0066CC.
+  colors: {
+    bg: "#000000",
+    surface: "#0a0a0a",
+    primary: "#FFFFFF",
+    accentFrom: "#0099FF",
+    accentTo: "#0066CC",
+  },
 } as const;
 
 export interface ValueProp {

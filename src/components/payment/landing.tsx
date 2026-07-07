@@ -54,7 +54,7 @@ export function Landing({ onPayNow }: LandingProps) {
           <div className="mt-10 flex flex-col items-center gap-3">
             <Button
               size="lg"
-              className="h-12 px-10 bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/30 text-base"
+              className="h-12 px-10 pb-gradient text-white hover:opacity-90 shadow-lg shadow-blue-500/30 text-base"
               onClick={onPayNow}
             >
               Pay Now
@@ -76,16 +76,16 @@ export function Landing({ onPayNow }: LandingProps) {
             return (
               <Card
                 key={vp.title}
-                className="text-center hover:border-blue-300 dark:hover:border-blue-800 hover:shadow-md transition-all"
+                className="text-center bg-black/60 border-white/10 backdrop-blur-sm hover:border-blue-400/40 hover:bg-black/70 transition-all"
               >
                 <CardContent className="pt-8 pb-8">
-                  <div className="size-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-950/50 dark:to-blue-900/50 flex items-center justify-center mx-auto mb-4">
-                    <Icon className="size-6 text-blue-600 dark:text-blue-400" />
+                  <div className="size-12 rounded-xl pb-gradient flex items-center justify-center mx-auto mb-4">
+                    <Icon className="size-6 text-white" />
                   </div>
-                  <h2 className="font-semibold text-base mb-1.5">
+                  <h2 className="font-semibold text-base mb-1.5 text-white">
                     {vp.title}
                   </h2>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-sm text-white/60 leading-relaxed">
                     {vp.body}
                   </p>
                 </CardContent>

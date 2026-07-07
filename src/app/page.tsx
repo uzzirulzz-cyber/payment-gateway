@@ -9,11 +9,21 @@ import {
   Loader2,
   Home as HomeIcon,
   Package,
+  Settings,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Landing } from "@/components/payment/landing";
 import { CheckoutView } from "@/components/payment/checkout-view";
 import { PaymentHistory } from "@/components/payment/payment-history";
@@ -21,6 +31,7 @@ import { Dashboard } from "@/components/payment/dashboard";
 import { PaymentReturnModal } from "@/components/payment/payment-return-modal";
 import { WooCommerceSection } from "@/components/payment/woocommerce-section";
 import { BRAND } from "@/lib/brand";
+import { useTheme } from "@/lib/use-theme";
 
 type View = "landing" | "checkout" | "history" | "dashboard" | "woocommerce";
 
@@ -28,6 +39,11 @@ export default function Home() {
   const [view, setView] = useState<View>("landing");
   const [seeding, setSeeding] = useState(false);
   const [hasData, setHasData] = useState<boolean | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+
+  // Load the active theme from the database on mount.
+  const { theme, loading: themeLoading, restore } = useTheme();
 
   // Check if there's any data; offer to seed if not (only relevant on dashboard).
   useEffect(() => {
@@ -58,15 +74,27 @@ export default function Home() {
     }
   };
 
+  const handleRestore = async () => {
+    setRestoring(true);
+    const result = await restore();
+    setRestoring(false);
+    if (result.ok) {
+      toast.success("Theme restored to default.");
+      setSettingsOpen(false);
+    } else {
+      toast.error("Failed to restore theme.");
+    }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50/40 via-background to-background dark:from-blue-950/10">
-      {/* ===== Top banner (matches reference) ===== */}
-      <div className="bg-blue-700 text-white text-center text-xs py-1.5 px-4">
+    <div className="min-h-screen flex flex-col">
+      {/* ===== Top banner ===== */}
+      <div className="pb-gradient text-white text-center text-xs py-1.5 px-4 font-medium tracking-wider">
         {BRAND.legalName.toUpperCase()}
       </div>
 
       {/* ===== Header ===== */}
-      <header className="border-b bg-background/80 backdrop-blur-md sticky top-0 z-40">
+      <header className="border-b border-white/10 bg-black/70 backdrop-blur-md sticky top-0 z-40">
         <div className="container mx-auto max-w-6xl px-4 h-16 flex items-center justify-between">
           <button
             type="button"
@@ -74,15 +102,18 @@ export default function Home() {
             className="flex items-center gap-2.5 group"
           >
             <img
-              src="/playbeat-logo.png"
+              src={theme.logoUrl}
               alt="PlayBeat"
               className="h-9 w-auto"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = "/playbeat-logo.png";
+              }}
             />
             <div className="text-left">
-              <h1 className="text-base font-semibold leading-tight">
+              <h1 className="text-base font-semibold leading-tight text-white">
                 {BRAND.name}
               </h1>
-              <p className="text-[11px] text-muted-foreground leading-tight">
+              <p className="text-[11px] text-white/60 leading-tight">
                 Powered by JazzCash · Sandbox
               </p>
             </div>
@@ -113,6 +144,15 @@ export default function Home() {
               icon={<LayoutDashboard className="size-3.5" />}
               label="Dashboard"
             />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSettingsOpen(true)}
+              className="text-white/70 hover:text-white hover:bg-white/10"
+              title="Theme settings"
+            >
+              <Settings className="size-4" />
+            </Button>
           </nav>
         </div>
       </header>
@@ -134,16 +174,16 @@ export default function Home() {
         {view === "dashboard" && (
           <>
             {hasData === false && (
-              <div className="mb-6 rounded-lg border border-dashed border-blue-300 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="mb-6 rounded-lg border border-dashed border-blue-400/40 bg-blue-950/20 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-start gap-3">
-                  <div className="size-9 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center shrink-0">
-                    <Database className="size-4 text-blue-700 dark:text-blue-300" />
+                  <div className="size-9 rounded-lg bg-blue-500/20 flex items-center justify-center shrink-0">
+                    <Database className="size-4 text-blue-300" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">
+                    <p className="text-sm font-medium text-white">
                       No transactions yet — want some sample data?
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-white/60">
                       Seeds 25 fake orders across the last 14 days so the
                       dashboard has something to show.
                     </p>
@@ -154,7 +194,7 @@ export default function Home() {
                   size="sm"
                   onClick={seedData}
                   disabled={seeding}
-                  className="border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/50"
+                  className="border-blue-400/40 text-blue-200 hover:bg-blue-500/20"
                 >
                   {seeding ? (
                     <Loader2 className="size-3.5 animate-spin" />
@@ -171,14 +211,109 @@ export default function Home() {
       </main>
 
       {/* ===== Footer ===== */}
-      <footer className="border-t bg-background/80 backdrop-blur-md mt-12">
+      <footer className="border-t border-white/10 bg-black/70 backdrop-blur-md mt-12">
         <div className="container mx-auto max-w-6xl px-4 py-6 text-center">
-          <p className="text-xs text-muted-foreground">{BRAND.footer}</p>
+          <p className="text-xs text-white/50">{BRAND.footer}</p>
         </div>
       </footer>
 
       {/* Auto-opens when redirected back from JazzCash */}
       <PaymentReturnModal />
+
+      {/* Theme settings dialog */}
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-white/10">
+          <DialogHeader>
+            <DialogTitle className="text-white">Theme settings</DialogTitle>
+            <DialogDescription className="text-white/60">
+              The active theme is loaded from the database. Restore to reset to
+              the factory default.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-white/60">Preset</span>
+              <Badge
+                variant="secondary"
+                className={
+                  theme.preset === "default"
+                    ? "bg-blue-500/20 text-blue-200"
+                    : "bg-amber-500/20 text-amber-200"
+                }
+              >
+                {theme.preset}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-white/60">Name</span>
+              <span className="text-white font-medium">{theme.name}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-white/60">Logo</span>
+              <img
+                src={theme.logoUrl}
+                alt="logo"
+                className="h-6 w-auto"
+              />
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-white/60">Background image</span>
+              <span className="text-white font-mono text-xs">
+                {theme.bgImageUrl ? "yes" : "no"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-white/60">Accent gradient</span>
+              <div className="flex items-center gap-1">
+                <span
+                  className="size-4 rounded"
+                  style={{ backgroundColor: theme.accentFrom }}
+                />
+                <span className="text-white/40 text-xs">→</span>
+                <span
+                  className="size-4 rounded"
+                  style={{ backgroundColor: theme.accentTo }}
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-white/60">Mode</span>
+              <span className="text-white">
+                {theme.isDark ? "Dark" : "Light"}
+              </span>
+            </div>
+            {themeLoading && (
+              <p className="text-xs text-white/40 flex items-center gap-1.5">
+                <Loader2 className="size-3 animate-spin" />
+                Loading theme from database…
+              </p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSettingsOpen(false)}
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              Close
+            </Button>
+            <Button
+              onClick={handleRestore}
+              disabled={restoring || theme.preset === "default"}
+              className="pb-gradient text-white"
+            >
+              {restoring ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <RotateCcw className="size-4" />
+              )}
+              Restore to default
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -199,7 +334,11 @@ function NavButton({
       variant={active ? "secondary" : "ghost"}
       size="sm"
       onClick={onClick}
-      className="gap-1.5"
+      className={
+        active
+          ? "gap-1.5 bg-white/15 text-white hover:bg-white/20"
+          : "gap-1.5 text-white/70 hover:text-white hover:bg-white/10"
+      }
     >
       {icon}
       <span className="hidden sm:inline">{label}</span>

@@ -9,6 +9,7 @@ import {
   Database,
   Loader2,
   Home as HomeIcon,
+  Package,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -19,9 +20,10 @@ import { CheckoutView } from "@/components/payment/checkout-view";
 import { PaymentHistory } from "@/components/payment/payment-history";
 import { Dashboard } from "@/components/payment/dashboard";
 import { PaymentReturnModal } from "@/components/payment/payment-return-modal";
+import { WooCommerceSection } from "@/components/payment/woocommerce-section";
 import { BRAND } from "@/lib/brand";
 
-type View = "landing" | "checkout" | "history" | "dashboard";
+type View = "landing" | "checkout" | "history" | "dashboard" | "woocommerce";
 
 export default function Home() {
   const [view, setView] = useState<View>("landing");
@@ -93,6 +95,12 @@ export default function Home() {
               label="Home"
             />
             <NavButton
+              active={view === "woocommerce"}
+              onClick={() => setView("woocommerce")}
+              icon={<Package className="size-3.5" />}
+              label="WooCommerce"
+            />
+            <NavButton
               active={view === "history"}
               onClick={() => setView("history")}
               icon={<History className="size-3.5" />}
@@ -117,6 +125,8 @@ export default function Home() {
         {view === "checkout" && (
           <CheckoutView onBack={() => setView("landing")} />
         )}
+
+        {view === "woocommerce" && <WooCommerceSection />}
 
         {view === "history" && <PaymentHistory />}
 

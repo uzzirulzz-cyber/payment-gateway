@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { Theme } from "@/lib/models/theme";
 import { ensureDefaultTheme } from "@/app/api/theme/route";
 
 export const runtime = "nodejs";
@@ -12,10 +12,8 @@ export const runtime = "nodejs";
  */
 export async function POST() {
   await ensureDefaultTheme();
-  await db.theme.deleteMany({ where: { preset: "custom" } });
-  const restored = await db.theme.findUnique({
-    where: { preset: "default" },
-  });
+  await Theme.deleteOne({ preset: "custom" });
+  const restored = await Theme.findOne({ preset: "default" }).lean();
   return NextResponse.json({
     ok: true,
     message: "Theme restored to default.",

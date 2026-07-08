@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { connectDB, Order } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -43,11 +43,12 @@ function pick<T>(arr: T[]): T {
 }
 
 export async function POST(request: Request) {
+  await connectDB();
   const url = new URL(request.url);
   const count = Math.min(Number(url.searchParams.get("count") ?? 25), 100);
 
   // Don't re-seed if we already have data.
-  const existing = await db.order.count();
+  const existing = await Order.countDocuments();
   if (existing > 0) {
     return NextResponse.json({
       ok: true,
@@ -58,7 +59,7 @@ export async function POST(request: Request) {
 
   const statuses = ["paid", "paid", "paid", "paid", "pending", "failed"];
   const now = Date.now();
-  const created = [];
+  const docs = [];
 
   for (let i = 0; i < count; i++) {
     const status = pick(statuses);
@@ -70,34 +71,30 @@ export async function POST(request: Request) {
     const amount = pick([199, 299, 499, 999, 1499, 2499, 4999, 9999, 14999]);
     const txnRefNo = `T${createdAt.getTime()}${Math.floor(100000 + Math.random() * 900000)}`;
 
-    created.push(
-      db.order.create({
-        data: {
-          txnRefNo,
-          amount,
-          description: pick(SAMPLE_DESCRIPTIONS),
-          customerName: pick(SAMPLE_NAMES),
-          customerEmail: pick(SAMPLE_EMAILS),
-          customerPhone: `+923${Math.floor(10000000 + Math.random() * 89999999)}`,
-          status,
-          responseCode: status === "paid" ? "000" : status === "failed" ? "121" : null,
-          responseMessage:
-            status === "paid"
-              ? "Approved"
-              : status === "failed"
-                ? "Transaction not found"
-                : null,
-          paymentMethod: status === "paid" ? "MWALLET" : null,
-          transactionId:
-            status === "paid" ? `5023${Math.floor(100000 + Math.random() * 900000)}` : null,
-          createdAt,
-          updatedAt: createdAt,
-        },
-      }),
-    );
+    docs.push({
+      txnRefNo,
+      amount,
+      description: pick(SAMPLE_DESCRIPTIONS),
+      customerName: pick(SAMPLE_NAMES),
+      customerEmail: pick(SAMPLE_EMAILS),
+      customerPhone: `+923${Math.floor(10000000 + Math.random() * 89999999)}`,
+      status,
+      responseCode: status === "paid" ? "000" : status === "failed" ? "121" : null,
+      responseMessage:
+        status === "paid"
+          ? "Approved"
+          : status === "failed"
+            ? "Transaction not found"
+            : null,
+      paymentMethod: status === "paid" ? "MWALLET" : null,
+      transactionId:
+        status === "paid" ? `5023${Math.floor(100000 + Math.random() * 900000)}` : null,
+      createdAt,
+      updatedAt: createdAt,
+    });
   }
 
-  await Promise.all(created);
+  await Order.insertMany(docs);
 
   return NextResponse.json({
     ok: true,

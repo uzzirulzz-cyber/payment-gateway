@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { connectDB, Order } from "@/lib/db";
 import {
   getJazzCashEnv,
   interpretResponseCode,
@@ -11,14 +11,11 @@ export const runtime = "nodejs";
 
 /**
  * JazzCash redirects the customer's browser (POST) to this URL after payment,
- * AND (in production) makes a server-to-server POST here. We support both
- * POST (form-encoded body) and GET (query params) so we can handle either.
- *
- * After verifying the secure hash and updating the order, we redirect the
- * browser to `/?payment=return&txnRefNo=...&status=...` so the SPA can
- * surface a success/failure modal.
+ * AND (in production) makes a server-to-server POST here. We support both.
  */
 async function handleParams(params: Record<string, string>) {
+  await connectDB();
+
   const txnRefNo = params["pp_TxnRefNo"] ?? "";
   if (!txnRefNo) {
     return NextResponse.json(
@@ -27,7 +24,15 @@ async function handleParams(params: Record<string, string>) {
     );
   }
 
-  const order = await db.order.findUnique({ where: { txnRefNo } });
+  const order = (await Order.findOne({ txnRefNo }).lean()) as {
+    _id: string;
+    txnRefNo: string;
+    amount: number;
+    description: string;
+    customerEmail: string | null;
+    customerName: string | null;
+  } | null;
+
   if (!order) {
     return NextResponse.json(
       { ok: false, error: `Order not found for ${txnRefNo}` },
@@ -49,27 +54,28 @@ async function handleParams(params: Record<string, string>) {
   const responseCode = params["pp_ResponseCode"] ?? "";
   const interpretation = interpretResponseCode(responseCode);
 
-  // Even if hash is invalid we still log the raw response for forensics.
   const newStatus = !hashValid
     ? "failed"
     : interpretation.success
       ? "paid"
       : "failed";
 
-  await db.order.update({
-    where: { id: order.id },
-    data: {
-      status: newStatus,
-      responseCode: responseCode || null,
-      responseMessage: interpretation.label,
-      paymentMethod: params["pp_PaymentMethod"] ?? null,
-      transactionId:
-        params["pp_RetreivalReferenceNumber"] ??
-        params["pp_TxnRefNo"] ??
-        null,
-      rawResponse: JSON.stringify(params),
+  await Order.updateOne(
+    { _id: order._id },
+    {
+      $set: {
+        status: newStatus,
+        responseCode: responseCode || null,
+        responseMessage: interpretation.label,
+        paymentMethod: params["pp_PaymentMethod"] ?? null,
+        transactionId:
+          params["pp_RetreivalReferenceNumber"] ??
+          params["pp_TxnRefNo"] ??
+          null,
+        rawResponse: JSON.stringify(params),
+      },
     },
-  });
+  );
 
   // Send email receipt on successful payment (fire-and-forget, non-blocking).
   if (newStatus === "paid" && order.customerEmail) {
@@ -86,13 +92,10 @@ async function handleParams(params: Record<string, string>) {
     })
       .then((result) => {
         if (result.success) {
-          // Stamp the order with the receipt-sent timestamp.
-          db.order
-            .update({
-              where: { id: order.id },
-              data: { receiptSentAt: new Date() },
-            })
-            .catch(() => {});
+          Order.updateOne(
+            { _id: order._id },
+            { $set: { receiptSentAt: new Date() } },
+          ).catch(() => {});
           if (result.previewUrl) {
             console.log(
               `[email] Receipt preview for ${order.txnRefNo}: ${result.previewUrl}`,
@@ -130,7 +133,6 @@ export async function POST(request: Request) {
   const result = await handleParams(params);
   if (result instanceof NextResponse) return result;
 
-  // Browser redirect back to the SPA so it can show a status modal.
   const baseUrl = new URL(request.url).origin;
   const redirectUrl = `${baseUrl}/?payment=return&txnRefNo=${encodeURIComponent(result.txnRefNo)}&status=${result.status}`;
   return NextResponse.redirect(redirectUrl, 302);
@@ -146,7 +148,6 @@ export async function GET(request: Request) {
   const result = await handleParams(params);
   if (result instanceof NextResponse) return result;
 
-  // NextResponse.redirect requires an absolute URL. Build it from the request.
   const baseUrl = new URL(request.url).origin;
   const redirectUrl = `${baseUrl}/?payment=return&txnRefNo=${encodeURIComponent(result.txnRefNo)}&status=${result.status}`;
   return NextResponse.redirect(redirectUrl, 302);

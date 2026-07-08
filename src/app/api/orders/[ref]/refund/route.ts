@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import mongoose from "mongoose";
+import { connectDB, Order } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -9,14 +10,12 @@ interface RefundBody {
 
 /**
  * POST /api/orders/[ref]/refund
- *
- * Marks a paid order as refunded. In demo mode this just updates the
- * status — in production you'd also call JazzCash's refund API.
  */
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ ref: string }> },
 ) {
+  await connectDB();
   const { ref } = await params;
 
   let body: RefundBody = {};
@@ -26,9 +25,12 @@ export async function POST(
     /* empty body is fine */
   }
 
-  const order = await db.order.findFirst({
-    where: { OR: [{ txnRefNo: ref }, { id: ref }] },
-  });
+  const isValidObjectId = mongoose.isValidObjectId(ref);
+  const query = isValidObjectId
+    ? { $or: [{ txnRefNo: ref }, { _id: ref }] }
+    : { txnRefNo: ref };
+
+  const order = (await Order.findOne(query).lean()) as { _id: string; txnRefNo: string; status: string } | null;
 
   if (!order) {
     return NextResponse.json(
@@ -47,14 +49,17 @@ export async function POST(
     );
   }
 
-  const updated = await db.order.update({
-    where: { id: order.id },
-    data: {
-      status: "refunded",
-      refundedAt: new Date(),
-      refundReason: body.reason?.trim() || null,
+  const updated = await Order.findByIdAndUpdate(
+    order._id,
+    {
+      $set: {
+        status: "refunded",
+        refundedAt: new Date(),
+        refundReason: body.reason?.trim() || null,
+      },
     },
-  });
+    { new: true },
+  ).lean();
 
   return NextResponse.json({
     ok: true,

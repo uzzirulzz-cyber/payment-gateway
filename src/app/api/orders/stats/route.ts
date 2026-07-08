@@ -1,24 +1,27 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { connectDB, Order } from "@/lib/db";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  // Aggregate by status
-  const grouped = await db.order.groupBy({
-    by: ["status"],
-    _sum: { amount: true },
-    _count: { _all: true },
-  });
+  await connectDB();
 
-  const totals: Record<
-    string,
-    { count: number; amount: number }
-  > = {};
+  // Aggregate by status
+  const grouped = await Order.aggregate([
+    {
+      $group: {
+        _id: "$status",
+        count: { $sum: 1 },
+        amount: { $sum: "$amount" },
+      },
+    },
+  ]);
+
+  const totals: Record<string, { count: number; amount: number }> = {};
   for (const g of grouped) {
-    totals[g.status] = {
-      count: g._count._all,
-      amount: g._sum.amount ?? 0,
+    totals[g._id ?? "pending"] = {
+      count: g.count,
+      amount: g.amount ?? 0,
     };
   }
 
@@ -36,15 +39,13 @@ export async function GET() {
   since.setDate(since.getDate() - 13);
   since.setHours(0, 0, 0, 0);
 
-  const recent = await db.order.findMany({
-    where: {
-      createdAt: { gte: since },
-      status: "paid",
-    },
-    select: { amount: true, createdAt: true },
-  });
+  const recent = await Order.find({
+    createdAt: { $gte: since },
+    status: "paid",
+  })
+    .select("amount createdAt")
+    .lean();
 
-  // Bucket by yyyy-mm-dd
   const dayMap = new Map<string, number>();
   for (let i = 0; i < 14; i++) {
     const d = new Date(since);
@@ -52,8 +53,8 @@ export async function GET() {
     dayMap.set(d.toISOString().slice(0, 10), 0);
   }
   for (const r of recent) {
-    const key = r.createdAt.toISOString().slice(0, 10);
-    dayMap.set(key, (dayMap.get(key) ?? 0) + r.amount);
+    const key = new Date(r.createdAt).toISOString().slice(0, 10);
+    dayMap.set(key, (dayMap.get(key) ?? 0) + (r.amount as number));
   }
   const trend = Array.from(dayMap.entries()).map(([date, amount]) => ({
     date,

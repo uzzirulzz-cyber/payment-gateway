@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import mongoose from "mongoose";
+import { connectDB, Order } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -7,14 +8,16 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ ref: string }> },
 ) {
+  await connectDB();
   const { ref } = await params;
 
-  // ref can be either the txnRefNo OR the order id
-  const order = await db.order.findFirst({
-    where: {
-      OR: [{ txnRefNo: ref }, { id: ref }],
-    },
-  });
+  // Build query — only use _id if ref is a valid ObjectId, otherwise just txnRefNo
+  const isValidObjectId = mongoose.isValidObjectId(ref);
+  const query = isValidObjectId
+    ? { $or: [{ txnRefNo: ref }, { _id: ref }] }
+    : { txnRefNo: ref };
+
+  const order = await Order.findOne(query).lean();
 
   if (!order) {
     return NextResponse.json(

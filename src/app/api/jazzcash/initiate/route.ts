@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { connectDB, Order } from "@/lib/db";
 import {
   buildJazzCashParams,
   generateTxnRef,
@@ -74,8 +74,7 @@ export async function POST(request: Request) {
     return fail((e as Error).message, 500);
   }
 
-  // Generate txnRefNo with idempotency check — ensure we never
-  // accidentally create two orders with the same reference.
+  // Generate txnRefNo with idempotency check
   let txnRefNo = generateTxnRef();
   let attempts = 0;
   while (isDuplicateTxnRef(txnRefNo) && attempts < 5) {
@@ -86,28 +85,25 @@ export async function POST(request: Request) {
     return fail("Could not generate unique transaction reference. Retry.", 503);
   }
 
-  // Also check the database for existing txnRefNo (in case of restart).
-  const existing = await db.order.findUnique({
-    where: { txnRefNo },
-    select: { id: true },
-  });
+  await connectDB();
+
+  // Check DB for existing txnRefNo
+  const existing = await Order.findOne({ txnRefNo }).select("_id").lean();
   if (existing) {
     return fail("Transaction reference collision. Please retry.", 409);
   }
 
   markTxnRefProcessed(txnRefNo);
 
-  // Persist the order first so we can reconcile on callback.
-  const order = await db.order.create({
-    data: {
-      txnRefNo,
-      amount,
-      description: body.description.trim(),
-      customerName: body.customerName?.trim() || null,
-      customerEmail: body.customerEmail?.trim() || null,
-      customerPhone: body.customerPhone?.trim() || null,
-      status: "pending",
-    },
+  // Persist the order
+  const order = await Order.create({
+    txnRefNo,
+    amount,
+    description: body.description.trim(),
+    customerName: body.customerName?.trim() || null,
+    customerEmail: body.customerEmail?.trim() || null,
+    customerPhone: body.customerPhone?.trim() || null,
+    status: "pending",
   });
 
   const params = buildJazzCashParams({
@@ -122,7 +118,7 @@ export async function POST(request: Request) {
   return NextResponse.json(
     {
       ok: true,
-      orderId: order.id,
+      orderId: String(order._id),
       txnRefNo,
       formAction: jazzCashFormAction(env.sandbox, env.demoMode),
       params,

@@ -1,23 +1,36 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import mongoose from "mongoose";
+import { connectDB, Order } from "@/lib/db";
 
 export const runtime = "nodejs";
 
 /**
  * GET /api/orders/[ref]/receipt
- *
- * Returns a plain-text receipt for the order (viewable in browser or
- * emailable). Used by the History/Refunds tab "View receipt" link.
  */
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ ref: string }> },
 ) {
+  await connectDB();
   const { ref } = await params;
 
-  const order = await db.order.findFirst({
-    where: { OR: [{ txnRefNo: ref }, { id: ref }] },
-  });
+  const isValidObjectId = mongoose.isValidObjectId(ref);
+  const query = isValidObjectId
+    ? { $or: [{ txnRefNo: ref }, { _id: ref }] }
+    : { txnRefNo: ref };
+
+  const order = (await Order.findOne(query).lean()) as {
+    txnRefNo: string;
+    amount: number;
+    description: string;
+    customerName: string | null;
+    customerEmail: string | null;
+    status: string;
+    transactionId: string | null;
+    paymentMethod: string | null;
+    receiptSentAt: Date | null;
+    createdAt: Date;
+  } | null;
 
   if (!order) {
     return NextResponse.json(
@@ -26,7 +39,7 @@ export async function GET(
     );
   }
 
-  const date = order.createdAt.toLocaleString("en-PK", {
+  const date = new Date(order.createdAt).toLocaleString("en-PK", {
     dateStyle: "full",
     timeStyle: "short",
   });
@@ -45,7 +58,7 @@ Email:            ${order.customerEmail ?? "—"}
 
 TOTAL:            PKR ${order.amount.toLocaleString()}
 
-${order.receiptSentAt ? `Receipt emailed: ${order.receiptSentAt.toLocaleString("en-PK")}\n` : ""}---
+${order.receiptSentAt ? `Receipt emailed: ${new Date(order.receiptSentAt).toLocaleString("en-PK")}\n` : ""}---
 PlayBeat Digital Private Limited
 hello@playbeat.digital
 © 2026 Playbeat Digital Private Limited. All rights reserved.

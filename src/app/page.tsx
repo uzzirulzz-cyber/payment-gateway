@@ -30,10 +30,11 @@ import { PaymentHistory } from "@/components/payment/payment-history";
 import { Dashboard } from "@/components/payment/dashboard";
 import { PaymentReturnModal } from "@/components/payment/payment-return-modal";
 import { WooCommerceSection } from "@/components/payment/woocommerce-section";
+import { RefundsView } from "@/components/payment/refunds-view";
 import { BRAND } from "@/lib/brand";
 import { useTheme } from "@/lib/use-theme";
 
-type View = "landing" | "checkout" | "history" | "dashboard" | "woocommerce";
+type View = "landing" | "checkout" | "history" | "dashboard" | "woocommerce" | "refunds";
 
 export default function Home() {
   const [view, setView] = useState<View>("landing");
@@ -42,10 +43,8 @@ export default function Home() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [restoring, setRestoring] = useState(false);
 
-  // Load the active theme from the database on mount.
   const { theme, loading: themeLoading, restore } = useTheme();
 
-  // Check if there's any data; offer to seed if not (only relevant on dashboard).
   useEffect(() => {
     (async () => {
       try {
@@ -88,12 +87,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* ===== Top banner ===== */}
       <div className="pb-gradient text-white text-center text-xs py-1.5 px-4 font-medium tracking-wider">
         {BRAND.legalName.toUpperCase()}
       </div>
 
-      {/* ===== Header ===== */}
       <header className="border-b border-white/10 bg-black/70 backdrop-blur-md sticky top-0 z-40">
         <div className="container mx-auto max-w-6xl px-4 h-16 flex items-center justify-between">
           <button
@@ -114,36 +111,17 @@ export default function Home() {
                 {BRAND.name}
               </h1>
               <p className="text-[11px] text-white/60 leading-tight">
-                Powered by JazzCash · Sandbox
+                Powered by JazzCash · Demo Mode
               </p>
             </div>
           </button>
 
           <nav className="flex items-center gap-1">
-            <NavButton
-              active={view === "landing"}
-              onClick={() => setView("landing")}
-              icon={<HomeIcon className="size-3.5" />}
-              label="Home"
-            />
-            <NavButton
-              active={view === "woocommerce"}
-              onClick={() => setView("woocommerce")}
-              icon={<Package className="size-3.5" />}
-              label="WooCommerce"
-            />
-            <NavButton
-              active={view === "history"}
-              onClick={() => setView("history")}
-              icon={<History className="size-3.5" />}
-              label="History"
-            />
-            <NavButton
-              active={view === "dashboard"}
-              onClick={() => setView("dashboard")}
-              icon={<LayoutDashboard className="size-3.5" />}
-              label="Dashboard"
-            />
+            <NavButton active={view === "landing"} onClick={() => setView("landing")} icon={<HomeIcon className="size-3.5" />} label="Home" />
+            <NavButton active={view === "woocommerce"} onClick={() => setView("woocommerce")} icon={<Package className="size-3.5" />} label="WooCommerce" />
+            <NavButton active={view === "history"} onClick={() => setView("history")} icon={<History className="size-3.5" />} label="History" />
+            <NavButton active={view === "refunds"} onClick={() => setView("refunds")} icon={<RotateCcw className="size-3.5" />} label="Refunds" />
+            <NavButton active={view === "dashboard"} onClick={() => setView("dashboard")} icon={<LayoutDashboard className="size-3.5" />} label="Dashboard" />
             <Button
               variant="ghost"
               size="icon"
@@ -157,20 +135,12 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ===== Main content ===== */}
       <main className="flex-1 container mx-auto max-w-6xl px-4 py-8">
-        {view === "landing" && (
-          <Landing onPayNow={() => setView("checkout")} />
-        )}
-
-        {view === "checkout" && (
-          <CheckoutView onBack={() => setView("landing")} />
-        )}
-
+        {view === "landing" && <Landing onPayNow={() => setView("checkout")} />}
+        {view === "checkout" && <CheckoutView onBack={() => setView("landing")} />}
         {view === "woocommerce" && <WooCommerceSection />}
-
         {view === "history" && <PaymentHistory />}
-
+        {view === "refunds" && <RefundsView />}
         {view === "dashboard" && (
           <>
             {hasData === false && (
@@ -180,27 +150,12 @@ export default function Home() {
                     <Database className="size-4 text-blue-300" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-white">
-                      No transactions yet — want some sample data?
-                    </p>
-                    <p className="text-xs text-white/60">
-                      Seeds 25 fake orders across the last 14 days so the
-                      dashboard has something to show.
-                    </p>
+                    <p className="text-sm font-medium text-white">No transactions yet — want some sample data?</p>
+                    <p className="text-xs text-white/60">Seeds 25 fake orders across the last 14 days.</p>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={seedData}
-                  disabled={seeding}
-                  className="border-blue-400/40 text-blue-200 hover:bg-blue-500/20"
-                >
-                  {seeding ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <Sparkles className="size-3.5" />
-                  )}
+                <Button variant="outline" size="sm" onClick={seedData} disabled={seeding} className="border-blue-400/40 text-blue-200 hover:bg-blue-500/20">
+                  {seeding ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
                   Seed sample data
                 </Button>
               </div>
@@ -210,38 +165,26 @@ export default function Home() {
         )}
       </main>
 
-      {/* ===== Footer ===== */}
       <footer className="border-t border-white/10 bg-black/70 backdrop-blur-md mt-12">
         <div className="container mx-auto max-w-6xl px-4 py-6 text-center">
           <p className="text-xs text-white/50">{BRAND.footer}</p>
         </div>
       </footer>
 
-      {/* Auto-opens when redirected back from JazzCash */}
       <PaymentReturnModal />
 
-      {/* Theme settings dialog */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
         <DialogContent className="sm:max-w-md bg-card border-white/10">
           <DialogHeader>
             <DialogTitle className="text-white">Theme settings</DialogTitle>
             <DialogDescription className="text-white/60">
-              The active theme is loaded from the database. Restore to reset to
-              the factory default.
+              The active theme is loaded from the database. Restore to reset to the factory default.
             </DialogDescription>
           </DialogHeader>
-
           <div className="space-y-3 py-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-white/60">Preset</span>
-              <Badge
-                variant="secondary"
-                className={
-                  theme.preset === "default"
-                    ? "bg-blue-500/20 text-blue-200"
-                    : "bg-amber-500/20 text-amber-200"
-                }
-              >
+              <Badge variant="secondary" className={theme.preset === "default" ? "bg-blue-500/20 text-blue-200" : "bg-amber-500/20 text-amber-200"}>
                 {theme.preset}
               </Badge>
             </div>
@@ -251,37 +194,15 @@ export default function Home() {
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-white/60">Logo</span>
-              <img
-                src={theme.logoUrl}
-                alt="logo"
-                className="h-6 w-auto"
-              />
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-white/60">Background image</span>
-              <span className="text-white font-mono text-xs">
-                {theme.bgImageUrl ? "yes" : "no"}
-              </span>
+              <img src={theme.logoUrl} alt="logo" className="h-6 w-auto" />
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-white/60">Accent gradient</span>
               <div className="flex items-center gap-1">
-                <span
-                  className="size-4 rounded"
-                  style={{ backgroundColor: theme.accentFrom }}
-                />
+                <span className="size-4 rounded" style={{ backgroundColor: theme.accentFrom }} />
                 <span className="text-white/40 text-xs">→</span>
-                <span
-                  className="size-4 rounded"
-                  style={{ backgroundColor: theme.accentTo }}
-                />
+                <span className="size-4 rounded" style={{ backgroundColor: theme.accentTo }} />
               </div>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-white/60">Mode</span>
-              <span className="text-white">
-                {theme.isDark ? "Dark" : "Light"}
-              </span>
             </div>
             {themeLoading && (
               <p className="text-xs text-white/40 flex items-center gap-1.5">
@@ -290,25 +211,10 @@ export default function Home() {
               </p>
             )}
           </div>
-
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setSettingsOpen(false)}
-              className="border-white/20 text-white hover:bg-white/10"
-            >
-              Close
-            </Button>
-            <Button
-              onClick={handleRestore}
-              disabled={restoring || theme.preset === "default"}
-              className="pb-gradient text-white"
-            >
-              {restoring ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <RotateCcw className="size-4" />
-              )}
+            <Button variant="outline" onClick={() => setSettingsOpen(false)} className="border-white/20 text-white hover:bg-white/10">Close</Button>
+            <Button onClick={handleRestore} disabled={restoring || theme.preset === "default"} className="pb-gradient text-white">
+              {restoring ? <Loader2 className="size-4 animate-spin" /> : <RotateCcw className="size-4" />}
               Restore to default
             </Button>
           </DialogFooter>

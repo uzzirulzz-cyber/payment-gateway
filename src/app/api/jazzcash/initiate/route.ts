@@ -6,6 +6,12 @@ import {
   getJazzCashEnv,
   jazzCashFormAction,
 } from "@/lib/jazzcash";
+import {
+  checkRateLimit,
+  getClientIp,
+  isDuplicateTxnRef,
+  markTxnRefProcessed,
+} from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -22,6 +28,27 @@ function fail(message: string, status = 400) {
 }
 
 export async function POST(request: Request) {
+  // ===== Rate limiting =====
+  const ip = getClientIp(request);
+  const rateLimit = checkRateLimit(ip);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: `Rate limit exceeded. Try again in ${rateLimit.retryAfter} seconds.`,
+        retryAfter: rateLimit.retryAfter,
+      },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(rateLimit.retryAfter),
+          "X-RateLimit-Limit": "10",
+          "X-RateLimit-Remaining": "0",
+        },
+      },
+    );
+  }
+
   let body: InitiateBody;
   try {
     body = (await request.json()) as InitiateBody;
@@ -47,7 +74,28 @@ export async function POST(request: Request) {
     return fail((e as Error).message, 500);
   }
 
-  const txnRefNo = generateTxnRef();
+  // Generate txnRefNo with idempotency check — ensure we never
+  // accidentally create two orders with the same reference.
+  let txnRefNo = generateTxnRef();
+  let attempts = 0;
+  while (isDuplicateTxnRef(txnRefNo) && attempts < 5) {
+    txnRefNo = generateTxnRef();
+    attempts++;
+  }
+  if (isDuplicateTxnRef(txnRefNo)) {
+    return fail("Could not generate unique transaction reference. Retry.", 503);
+  }
+
+  // Also check the database for existing txnRefNo (in case of restart).
+  const existing = await db.order.findUnique({
+    where: { txnRefNo },
+    select: { id: true },
+  });
+  if (existing) {
+    return fail("Transaction reference collision. Please retry.", 409);
+  }
+
+  markTxnRefProcessed(txnRefNo);
 
   // Persist the order first so we can reconcile on callback.
   const order = await db.order.create({
@@ -71,13 +119,21 @@ export async function POST(request: Request) {
     env,
   });
 
-  return NextResponse.json({
-    ok: true,
-    orderId: order.id,
-    txnRefNo,
-    formAction: jazzCashFormAction(env.sandbox, env.demoMode),
-    params,
-    sandbox: env.sandbox,
-    demoMode: env.demoMode,
-  });
+  return NextResponse.json(
+    {
+      ok: true,
+      orderId: order.id,
+      txnRefNo,
+      formAction: jazzCashFormAction(env.sandbox, env.demoMode),
+      params,
+      sandbox: env.sandbox,
+      demoMode: env.demoMode,
+    },
+    {
+      headers: {
+        "X-RateLimit-Limit": "10",
+        "X-RateLimit-Remaining": String(rateLimit.remaining),
+      },
+    },
+  );
 }

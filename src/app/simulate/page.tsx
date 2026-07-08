@@ -9,6 +9,7 @@ import {
   CreditCard,
   Loader2,
   CheckCircle2,
+  XCircle,
   Lock,
   ArrowLeft,
 } from "lucide-react";
@@ -45,6 +46,7 @@ export default function SimulatePage() {
   const [method, setMethod] = useState<PaymentMethod>("wallet");
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   // Form fields per method (pre-filled with test values)
   const [walletNumber, setWalletNumber] = useState("03001234567");
@@ -72,7 +74,7 @@ export default function SimulatePage() {
   const amountInPaisa = params?.pp_Amount ?? "0";
   const amountInPkr = (Number(amountInPaisa) / 100).toLocaleString();
 
-  const handlePay = async () => {
+  const handlePay = async (shouldFail = false) => {
     if (!params) return;
     setProcessing(true);
 
@@ -80,9 +82,10 @@ export default function SimulatePage() {
     await new Promise((r) => setTimeout(r, 2000));
 
     // Build the response params — mirrors what JazzCash sends back.
+    // Response code 000 = success, 121 = transaction not found (failure).
     const responseParams: Record<string, string> = {
-      pp_ResponseCode: "000",
-      pp_ResponseMessage: "Approved",
+      pp_ResponseCode: shouldFail ? "121" : "000",
+      pp_ResponseMessage: shouldFail ? "Transaction not found" : "Approved",
       pp_TxnRefNo: params.pp_TxnRefNo,
       pp_Amount: params.pp_Amount,
       pp_TxnCurrency: params.pp_TxnCurrency ?? "PKR",
@@ -91,7 +94,9 @@ export default function SimulatePage() {
       pp_Description: params.pp_Description ?? "",
       pp_BillReference: `billRef-${params.pp_TxnRefNo}`,
       pp_SecureHash: "", // filled by /api/simulate/callback
-      pp_RetreivalReferenceNumber: `5023${Math.floor(100000 + Math.random() * 900000)}`,
+      pp_RetreivalReferenceNumber: shouldFail
+        ? ""
+        : `5023${Math.floor(100000 + Math.random() * 900000)}`,
       pp_PaymentMethod:
         method === "wallet"
           ? "MWALLET"
@@ -119,7 +124,11 @@ export default function SimulatePage() {
       const json = await res.json();
 
       if (json.ok) {
-        setSuccess(true);
+        if (shouldFail) {
+          setFailed(true);
+        } else {
+          setSuccess(true);
+        }
         setTimeout(() => {
           window.location.href = json.redirectUrl;
         }, 2000);
@@ -147,6 +156,33 @@ export default function SimulatePage() {
             </h2>
             <p className="text-white/60 text-sm mb-4">
               Your payment of PKR {amountInPkr} has been processed.
+            </p>
+            <p className="text-white/40 text-xs">
+              Redirecting you back to PlayBeat…
+            </p>
+            <Loader2 className="size-5 animate-spin text-white/40 mx-auto mt-4" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (failed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black p-4">
+        <Card className="max-w-md w-full bg-card border-white/10">
+          <CardContent className="pt-10 pb-10 text-center">
+            <div className="size-20 rounded-full bg-rose-500/20 flex items-center justify-center mx-auto mb-6">
+              <XCircle className="size-12 text-rose-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              Payment Failed
+            </h2>
+            <p className="text-white/60 text-sm mb-4">
+              Your payment of PKR {amountInPkr} could not be processed.
+            </p>
+            <p className="text-white/40 text-xs mb-2">
+              Response code: 121 — Transaction not found
             </p>
             <p className="text-white/40 text-xs">
               Redirecting you back to PlayBeat…
@@ -366,7 +402,7 @@ export default function SimulatePage() {
         <Button
           size="lg"
           className="w-full h-14 pb-gradient text-white text-base font-semibold shadow-lg shadow-blue-500/30"
-          onClick={handlePay}
+          onClick={() => handlePay(false)}
           disabled={processing}
         >
           {processing ? (
@@ -380,6 +416,18 @@ export default function SimulatePage() {
               Pay PKR {amountInPkr} Securely
             </>
           )}
+        </Button>
+
+        {/* Simulate failure button (demo only) */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full h-9 mt-2 border-rose-500/30 text-rose-300 hover:bg-rose-500/10"
+          onClick={() => handlePay(true)}
+          disabled={processing}
+        >
+          <XCircle className="size-3.5" />
+          Simulate payment failure (demo)
         </Button>
 
         <div className="mt-6 flex items-center justify-center gap-4 text-xs text-white/40">

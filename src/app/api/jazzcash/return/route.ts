@@ -5,6 +5,7 @@ import {
   interpretResponseCode,
   verifySecureHash,
 } from "@/lib/jazzcash";
+import { sendReceiptEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -69,6 +70,38 @@ async function handleParams(params: Record<string, string>) {
       rawResponse: JSON.stringify(params),
     },
   });
+
+  // Send email receipt on successful payment (fire-and-forget, non-blocking).
+  if (newStatus === "paid" && order.customerEmail) {
+    sendReceiptEmail({
+      to: order.customerEmail,
+      customerName: order.customerName,
+      txnRefNo: order.txnRefNo,
+      amount: order.amount,
+      description: order.description,
+      transactionId:
+        params["pp_RetreivalReferenceNumber"] ?? params["pp_TxnRefNo"] ?? null,
+      paymentMethod: params["pp_PaymentMethod"] ?? null,
+      status: newStatus,
+    })
+      .then((result) => {
+        if (result.success) {
+          // Stamp the order with the receipt-sent timestamp.
+          db.order
+            .update({
+              where: { id: order.id },
+              data: { receiptSentAt: new Date() },
+            })
+            .catch(() => {});
+          if (result.previewUrl) {
+            console.log(
+              `[email] Receipt preview for ${order.txnRefNo}: ${result.previewUrl}`,
+            );
+          }
+        }
+      })
+      .catch((e) => console.error("[email] Receipt send error:", e));
+  }
 
   return { txnRefNo, status: newStatus, hashValid };
 }

@@ -33,6 +33,9 @@ model Order {
   paymentMethod    String?
   transactionId    String? // JazzCash pp_TxnRefNo (different from our ref) / pp_RetreivalReferenceNumber
   rawResponse      String?
+  receiptSentAt    DateTime?
+  refundedAt       DateTime?
+  refundReason     String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

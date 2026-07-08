@@ -121,32 +121,15 @@ if ! command -v bun >/dev/null 2>&1; then
 fi
 
 # ─── Embedded environment ────────────────────────────────────────────────
-# The system ships with DATABASE_URL=file:.../custom.db which clobbers our
-# Neon Postgres connection. This block restores the correct .env from
-# .env.embedded on every startup AND exports all vars so they override
-# the system defaults for every child process (bun, prisma, next).
-log_step_start "Restoring embedded environment"
-if [ -f "$PROJECT_DIR/.env.embedded" ]; then
-        cp "$PROJECT_DIR/.env.embedded" "$PROJECT_DIR/.env"
-        echo "[ENV] Restored .env from .env.embedded"
-
-        # Export every KEY=VALUE line so child processes inherit them,
-        # overriding any system-level DATABASE_URL etc.
-        while IFS='=' read -r key value; do
-                # Skip comments and blank lines
-                case "$key" in
-                        ''|\#*) continue ;;
-                esac
-                # Only export if value is non-empty
-                if [ -n "$value" ]; then
-                        export "$key=$value"
-                fi
-        done < "$PROJECT_DIR/.env.embedded"
-        echo "[ENV] Exported all variables (DATABASE_URL=${DATABASE_URL:0:40}...)"
-else
-        echo "[ENV] WARNING: .env.embedded not found, using system defaults"
-fi
-log_step_end "Restoring embedded environment"
+# All env vars are now hardcoded in src/lib/env.ts — no .env file needed.
+# We still unset the system DATABASE_URL so it doesn't confuse Prisma's
+# schema validator (which still references env("DATABASE_URL") in schema.prisma).
+log_step_start "Setting up environment"
+unset DATABASE_URL
+unset DIRECT_URL
+echo "[ENV] Cleared system DATABASE_URL override"
+echo "[ENV] All values hardcoded in src/lib/env.ts"
+log_step_end "Setting up environment"
 # ─────────────────────────────────────────────────────────────────────────
 
 log_step_start "bun install"

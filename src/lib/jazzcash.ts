@@ -1,4 +1,13 @@
 import crypto from "node:crypto";
+import {
+  JAZZCASH_MERCHANT_ID,
+  JAZZCASH_PASSWORD,
+  JAZZCASH_INTEGRITY_SALT,
+  JAZZCASH_SANDBOX,
+  JAZZCASH_DEMO_MODE,
+  JAZZCASH_RETURN_URL,
+  NEXT_PUBLIC_APP_URL,
+} from "@/lib/env";
 
 /**
  * JazzCash Payment Gateway integration helpers.
@@ -23,18 +32,18 @@ export type JazzCashEnv = {
 };
 
 export function getJazzCashEnv(): JazzCashEnv {
-  const merchantId = process.env.JAZZCASH_MERCHANT_ID;
-  const password = process.env.JAZZCASH_PASSWORD;
-  const integritySalt = process.env.JAZZCASH_INTEGRITY_SALT;
+  // Values come from src/lib/env.ts (hardcoded with process.env overrides).
+  const merchantId = JAZZCASH_MERCHANT_ID;
+  const password = JAZZCASH_PASSWORD;
+  const integritySalt = JAZZCASH_INTEGRITY_SALT;
   const returnUrl =
-    process.env.JAZZCASH_RETURN_URL ??
-    `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/api/jazzcash/return`;
-  const sandbox = (process.env.JAZZCASH_SANDBOX ?? "true") !== "false";
-  const demoMode = (process.env.JAZZCASH_DEMO_MODE ?? "false") === "true";
+    JAZZCASH_RETURN_URL ?? `${NEXT_PUBLIC_APP_URL}/api/jazzcash/return`;
+  const sandbox = JAZZCASH_SANDBOX;
+  const demoMode = JAZZCASH_DEMO_MODE;
 
   if (!merchantId || !password || !integritySalt) {
     throw new Error(
-      "Missing JazzCash credentials. Set JAZZCASH_MERCHANT_ID, JAZZCASH_PASSWORD, JAZZCASH_INTEGRITY_SALT in .env",
+      "Missing JazzCash credentials. Check src/lib/env.ts",
     );
   }
 

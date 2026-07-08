@@ -1,16 +1,12 @@
 import mongoose from "mongoose";
+import { MONGODB_URI, MONGODB_DB_NAME } from "@/lib/env";
 
 /**
  * MongoDB Atlas connection.
  *
- * Connects to the MONGODB_URI env var. Caches the connection across hot
- * reloads in development to avoid opening too many connections.
+ * Uses the hardcoded URI from src/lib/env.ts. Caches the connection across
+ * hot reloads in development to avoid opening too many connections.
  */
-
-const MONGODB_URI =
-  process.env.MONGODB_URI ??
-  process.env.DATABASE_URL ??
-  "mongodb://localhost:27017/playbeat";
 
 declare global {
   var __mongooseConn:
@@ -26,7 +22,7 @@ export async function connectDB(): Promise<typeof mongoose> {
 
   if (!cached.promise) {
     const opts: mongoose.ConnectOptions = {
-      dbName: "playbeat",
+      dbName: MONGODB_DB_NAME,
     };
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((m) => m);
   }

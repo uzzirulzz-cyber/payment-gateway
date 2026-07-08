@@ -1,4 +1,11 @@
 import nodemailer from "nodemailer";
+import {
+  SMTP_HOST,
+  SMTP_PORT,
+  SMTP_SECURE,
+  SMTP_USER,
+  SMTP_PASS,
+} from "@/lib/env";
 
 /**
  * Email receipt sender.
@@ -38,19 +45,15 @@ async function getTransporter(): Promise<{
   mode: "smtp" | "ethereal";
 }> {
   // Real SMTP configured?
-  if (
-    process.env.SMTP_HOST &&
-    process.env.SMTP_USER &&
-    process.env.SMTP_PASS
-  ) {
+  if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
     if (!cachedTransporter) {
       cachedTransporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT ?? 587),
-        secure: (process.env.SMTP_SECURE ?? "false") === "true",
+        host: SMTP_HOST,
+        port: SMTP_PORT,
+        secure: SMTP_SECURE,
         auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
+          user: SMTP_USER,
+          pass: SMTP_PASS,
         },
       });
     }
@@ -185,7 +188,7 @@ export async function sendReceiptEmail(r: ReceiptEmail): Promise<SendResult> {
     const info = await transporter.sendMail({
       from:
         mode === "smtp"
-          ? `"PlayBeat Digital" <${process.env.SMTP_USER}>`
+          ? `"PlayBeat Digital" <${SMTP_USER}>`
           : '"PlayBeat Digital" <noreply@playbeat.digital>',
       to: r.to,
       subject:

@@ -111,7 +111,7 @@ export default function Home() {
                 {BRAND.name}
               </h1>
               <p className="text-[11px] text-white/60 leading-tight">
-                Powered by JazzCash · Demo Mode
+                Powered by JazzCash · Live
               </p>
             </div>
           </button>
